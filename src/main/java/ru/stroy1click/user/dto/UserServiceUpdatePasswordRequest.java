@@ -1,4 +1,4 @@
-package ru.stroy1click.user.model;
+package ru.stroy1click.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

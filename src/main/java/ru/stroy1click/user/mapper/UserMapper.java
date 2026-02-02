@@ -6,8 +6,6 @@ import org.springframework.stereotype.Component;
 import ru.stroy1click.user.dto.UserDto;
 import ru.stroy1click.user.entity.User;
 
-import java.util.List;
-
 @Component
 @RequiredArgsConstructor
 public class UserMapper implements Mappable<User, UserDto>{

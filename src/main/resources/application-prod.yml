@@ -60,10 +60,6 @@ otel:
       protocol: "grpc"
       endpoint: "http://localhost:4317"
 
-logging:
-  file:
-    path: logs
-
 server:
   port: 8080
 web:
