@@ -12,7 +12,7 @@ import ru.stroy1click.user.cache.CacheClear;
 import ru.stroy1click.user.dto.UserDto;
 import ru.stroy1click.user.exception.NotFoundException;
 import ru.stroy1click.user.mapper.UserMapper;
-import ru.stroy1click.user.model.Role;
+import ru.stroy1click.user.entity.Role;
 import ru.stroy1click.user.entity.User;
 import ru.stroy1click.user.repository.UserRepository;
 import ru.stroy1click.user.service.impl.UserServiceImpl;

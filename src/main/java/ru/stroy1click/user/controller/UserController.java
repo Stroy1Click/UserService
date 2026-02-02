@@ -12,14 +12,13 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.stroy1click.user.dto.UserDto;
 import ru.stroy1click.user.exception.ValidationException;
-import ru.stroy1click.user.model.ConfirmEmailRequest;
-import ru.stroy1click.user.model.UserServiceUpdatePasswordRequest;
+import ru.stroy1click.user.dto.ConfirmEmailRequest;
+import ru.stroy1click.user.dto.UserServiceUpdatePasswordRequest;
 import ru.stroy1click.user.service.UserService;
 import ru.stroy1click.user.util.ValidationErrorUtils;
 import ru.stroy1click.user.validator.UserCreateValidator;
 
 import java.net.URI;
-import java.util.List;
 import java.util.Locale;
 
 @RestController
