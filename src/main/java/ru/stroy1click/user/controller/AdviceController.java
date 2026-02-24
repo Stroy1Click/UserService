@@ -1,8 +1,9 @@
 package ru.stroy1click.user.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.common.errors.AuthorizationException;
 import org.springframework.context.MessageSource;
-import ru.stroy1click.user.exception.*;
+import ru.stroy1click.common.exception.*;
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;

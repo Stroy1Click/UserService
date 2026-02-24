@@ -19,5 +19,5 @@ public interface UserService {
 
     void updateEmailConfirmedStatus(String email);
 
-    void updatePassword(String email, String newPassword);
+    void updatePassword(String newPassword, String email);
 }

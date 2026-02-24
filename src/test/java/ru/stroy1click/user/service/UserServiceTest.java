@@ -1,16 +1,17 @@
-package ru.stroy1click.user.unit;
+package ru.stroy1click.user.service;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.stroy1click.user.cache.CacheClear;
 import ru.stroy1click.user.dto.UserDto;
-import ru.stroy1click.user.exception.NotFoundException;
+import ru.stroy1click.common.exception.NotFoundException;
 import ru.stroy1click.user.mapper.UserMapper;
 import ru.stroy1click.user.entity.Role;
 import ru.stroy1click.user.entity.User;
@@ -23,7 +24,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class UserTest {
+@ExtendWith(MockitoExtension.class)
+public class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
@@ -43,13 +45,12 @@ public class UserTest {
     private UserServiceImpl userService;
 
     private User user;
+
     private UserDto userDto;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-
-        this.user = User.builder()
+        user = User.builder()
                 .id(1L)
                 .firstName("John")
                 .lastName("Doe")
@@ -59,30 +60,34 @@ public class UserTest {
                 .role(Role.ROLE_USER)
                 .build();
 
-        this.userDto = new UserDto();
-        this.userDto.setId(1L);
-        this.userDto.setFirstName("John");
-        this.userDto.setLastName("Doe");
-        this.userDto.setEmail("test@mail.com");
-        this.userDto.setPassword("password");
+        userDto = new UserDto();
+        userDto.setId(1L);
+        userDto.setFirstName("John");
+        userDto.setLastName("Doe");
+        userDto.setEmail("test@mail.com");
+        userDto.setPassword("password");
     }
 
     @Test
-    void get_ShouldReturnUserDto_WhenUserExists() {
+    void get_WhenUserExists_ShouldReturnUserDto() {
+        //Arrange
         when(this.userRepository.findById(1L))
-                .thenReturn(Optional.of(this.user));
-        when(this.userMapper.toDto(this.user))
-                .thenReturn(this.userDto);
+                .thenReturn(Optional.of(user));
+        when(this.userMapper.toDto(user))
+                .thenReturn(userDto);
 
+        //Act
         UserDto result = this.userService.get(1L);
 
+        //Assert
         assertNotNull(result);
-        assertEquals(this.userDto, result);
+        assertEquals(userDto, result);
         verify(this.userRepository).findById(1L);
     }
 
     @Test
-    void get_ShouldThrowNotFoundException_WhenUserNotFound() {
+    void get_WhenUserDoesNotExist_ShouldThrowNotFoundException() {
+        //Arrange
         when(this.userRepository.findById(1L))
                 .thenReturn(Optional.empty());
         when(this.messageSource.getMessage(
@@ -91,6 +96,7 @@ public class UserTest {
                 any(Locale.class)
         )).thenReturn("User not found");
 
+        //Act & Assert
         Assertions.assertThrows(
                 NotFoundException.class,
                 () -> this.userService.get(1L)
@@ -98,31 +104,39 @@ public class UserTest {
     }
 
     @Test
-    void create_ShouldEncodePasswordAndSaveUser() {
-        when(this.passwordEncoder.encode("password"))
-                .thenReturn("encoded");
-        when(this.userMapper.toEntity(this.userDto))
-                .thenReturn(this.user);
+    void create_WhenDataIsValid_ShouldReturnUserDto() {
+        //Arrange
+        when(this.passwordEncoder.encode("password")).thenReturn("encoded");
+        when(this.userMapper.toEntity(userDto)).thenReturn(user);
+        when(this.userRepository.save(any(User.class))).thenReturn(user);
+        when(this.userMapper.toDto(any(User.class))).thenReturn(userDto);
 
-        this.userService.create(this.userDto);
+        //Act
+        UserDto createdUser = this.userService.create(userDto);
 
+        //Assert
         verify(this.passwordEncoder).encode("password");
-        verify(this.userRepository).save(this.user);
+        verify(this.userRepository).save(user);
+        assertNotNull(createdUser.getId());
     }
 
     @Test
-    void update_ShouldUpdateUser_WhenUserExists() {
+    void update_WhenUserExists_ShouldUpdateUser() {
+        //Arrange
         when(this.userRepository.findById(1L))
-                .thenReturn(Optional.of(this.user));
+                .thenReturn(Optional.of(user));
 
-        this.userService.update(1L, this.userDto);
+        //Act
+        this.userService.update(1L, userDto);
 
+        //Assert
         verify(this.userRepository).save(any(User.class));
-        verify(this.cacheClear).clearEmail(this.userDto.getEmail());
+        verify(this.cacheClear).clearEmail(userDto.getEmail());
     }
 
     @Test
-    void update_ShouldThrowNotFoundException_WhenUserNotFound() {
+    void update_WhenUserDoesNotExist_ShouldThrowNotFoundException() {
+        //Arrange
         when(this.userRepository.findById(1L))
                 .thenReturn(Optional.empty());
         when(this.messageSource.getMessage(
@@ -131,25 +145,30 @@ public class UserTest {
                 any(Locale.class)
         )).thenReturn("User not found");
 
+        //Act & Assert
         Assertions.assertThrows(
                 NotFoundException.class,
-                () -> this.userService.update(1L, this.userDto)
+                () -> this.userService.update(1L, userDto)
         );
     }
 
     @Test
-    void delete_ShouldDeleteUserAndClearCache_WhenUserExists() {
+    void delete_WhenUserExists_ShouldDeleteUserAndClearCache() {
+        //Arrange
         when(this.userRepository.findById(1L))
-                .thenReturn(Optional.of(this.user));
+                .thenReturn(Optional.of(user));
 
+        //Act
         this.userService.delete(1L);
 
+        //Assert
         verify(this.userRepository).deleteById(1L);
-        verify(this.cacheClear).clearEmail(this.user.getEmail());
+        verify(this.cacheClear).clearEmail(user.getEmail());
     }
 
     @Test
-    void delete_ShouldThrowNotFoundException_WhenUserNotFound() {
+    void delete_WhenUserDoesNotExist_ShouldThrowNotFoundException() {
+        //Arrange
         when(this.userRepository.findById(1L))
                 .thenReturn(Optional.empty());
         when(this.messageSource.getMessage(
@@ -158,6 +177,7 @@ public class UserTest {
                 any(Locale.class)
         )).thenReturn("User not found");
 
+        //Act & Assert
         Assertions.assertThrows(
                 NotFoundException.class,
                 () -> this.userService.delete(1L)
@@ -165,21 +185,25 @@ public class UserTest {
     }
 
     @Test
-    void getByEmail_ShouldReturnUserDto_WhenUserExists() {
+    void getByEmail_WhenUserExists_ShouldReturnUserDto() {
+        //Arrange
         when(this.userRepository.findByEmail("test@mail.com"))
-                .thenReturn(Optional.of(this.user));
-        when(this.userMapper.toDto(this.user))
-                .thenReturn(this.userDto);
+                .thenReturn(Optional.of(user));
+        when(this.userMapper.toDto(user))
+                .thenReturn(userDto);
 
+        //Act & Assert
         UserDto result = this.userService.getByEmail("test@mail.com");
 
+        //Assert
         Assertions.assertNotNull(result);
-        Assertions.assertEquals(this.userDto, result);
+        Assertions.assertEquals(userDto, result);
         verify(this.userRepository).findByEmail("test@mail.com");
     }
 
     @Test
-    void getByEmail_ShouldThrowNotFoundException_WhenUserNotFound() {
+    void getByEmail_WhenUserDoesNotExist_ShouldThrowNotFoundException() {
+        //Arrange
         when(this.userRepository.findByEmail("test@mail.com"))
                 .thenReturn(Optional.empty());
         when(this.messageSource.getMessage(
@@ -188,6 +212,7 @@ public class UserTest {
                 any(Locale.class)
         )).thenReturn("User not found");
 
+        //Act & Assert
         Assertions.assertThrows(
                 NotFoundException.class,
                 () -> this.userService.getByEmail("test@mail.com")
@@ -195,30 +220,37 @@ public class UserTest {
     }
 
     @Test
-    void existsUserByEmail_ShouldReturnTrue_WhenUserExists() {
+    void existsUserByEmail_WhenUserExists_ShouldReturnTrue() {
+        //Arrange
         when(this.userRepository.existsUserByEmail("test@mail.com"))
                 .thenReturn(true);
 
+        //Act
         Boolean result = this.userService.existsUserByEmail("test@mail.com");
 
+        //Assert
         Assertions.assertTrue(result);
         verify(this.userRepository).existsUserByEmail("test@mail.com");
     }
 
     @Test
-    void updateEmailConfirmedStatus_ShouldSetEmailConfirmedTrue() {
+    void updateEmailConfirmedStatus_WhenUserExists_ShouldSetEmailConfirmedTrue() {
+        //Arrange
         when(this.userRepository.findByEmail("test@mail.com"))
-                .thenReturn(Optional.of(this.user));
+                .thenReturn(Optional.of(user));
 
+        //Act
         this.userService.updateEmailConfirmedStatus("test@mail.com");
 
-        Assertions.assertTrue(this.user.getEmailConfirmed());
-        verify(this.cacheClear).clearUserById(this.user.getId());
+        //Assert
+        Assertions.assertTrue(user.getEmailConfirmed());
+        verify(this.cacheClear).clearUserById(user.getId());
         verify(this.cacheClear).clearEmail("test@mail.com");
     }
 
     @Test
-    void updateEmailConfirmedStatus_ShouldThrowNotFoundException_WhenUserNotFound() {
+    void updateEmailConfirmedStatus_WhenUserDoesNotExists_ShouldThrowNotFoundException() {
+        //Arrange
         when(this.userRepository.findByEmail("test@mail.com"))
                 .thenReturn(Optional.empty());
         when(this.messageSource.getMessage(
@@ -227,6 +259,7 @@ public class UserTest {
                 any(Locale.class)
         )).thenReturn("User not found");
 
+        //Act & Assert
         Assertions.assertThrows(
                 NotFoundException.class,
                 () -> this.userService.updateEmailConfirmedStatus("test@mail.com")
@@ -234,31 +267,35 @@ public class UserTest {
     }
 
     @Test
-    void updatePassword_ShouldEncodeAndUpdatePassword() {
+    void updatePassword_WhenUserExists_ShouldEncodeAndUpdatePassword() {
+        //Arrange
         when(this.userRepository.findByEmail("test@mail.com"))
-                .thenReturn(Optional.of(this.user));
+                .thenReturn(Optional.of(user));
         when(this.passwordEncoder.encode("newPass"))
                 .thenReturn("encodedNewPass");
 
-        this.userService.updatePassword("test@mail.com", "newPass");
-        assertEquals("encodedNewPass", this.user.getPassword());
-        verify(this.cacheClear).clearUserById(this.user.getId());
+        //Act
+        this.userService.updatePassword( "newPass", "test@mail.com");
+
+        //Assert
+        assertEquals("encodedNewPass", user.getPassword());
+        verify(this.cacheClear).clearUserById(user.getId());
         verify(this.cacheClear).clearEmail("test@mail.com");
     }
 
     @Test
-    void updatePassword_ShouldThrowNotFoundException_WhenUserNotFound() {
-        when(this.userRepository.findByEmail("test@mail.com"))
-                .thenReturn(Optional.empty());
+    void updatePassword_WhenUserDoesNotExists_ShouldThrowNotFoundException() {
+        //Arrange
+        when(this.userRepository.findByEmail("test@mail.com")).thenReturn(Optional.empty());
         when(this.messageSource.getMessage(
-                eq("error.user.not_found_id"),
+                eq("error.user.not_found_email"),
                 any(),
                 any(Locale.class)
         )).thenReturn("User not found");
 
-        assertThrows(
-                NotFoundException.class,
-                () -> this.userService.updatePassword("test@mail.com", "newPass")
+        //Act & Assert
+        assertThrows(NotFoundException.class,
+                () -> this.userService.updatePassword("newPass", "test@mail.com")
         );
     }
 }

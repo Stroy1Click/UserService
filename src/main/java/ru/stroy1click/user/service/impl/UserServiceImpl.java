@@ -9,9 +9,9 @@ import org.springframework.context.MessageSource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.stroy1click.common.exception.NotFoundException;
 import ru.stroy1click.user.cache.CacheClear;
 import ru.stroy1click.user.dto.UserDto;
-import ru.stroy1click.user.exception.NotFoundException;
 import ru.stroy1click.user.mapper.UserMapper;
 import ru.stroy1click.user.entity.User;
 import ru.stroy1click.user.repository.UserRepository;
@@ -39,6 +39,7 @@ public class UserServiceImpl implements UserService {
     @Cacheable(value = "user", key = "#id")
     public UserDto get(Long id) {
         log.info("get {}", id);
+
         return this.userMapper.toDto(this.userRepository.findById(id).orElseThrow(
                 () -> new NotFoundException(
                         this.messageSource.getMessage(
@@ -69,6 +70,7 @@ public class UserServiceImpl implements UserService {
     @CacheEvict(value = "user", key = "#id")
     public void update(Long id, UserDto userDto) {
         log.info("update {}, {}", id, userDto);
+
         this.userRepository.findById(id).ifPresentOrElse(user -> {
             User newUser = User.builder()
                     .id(user.getId())
@@ -98,6 +100,7 @@ public class UserServiceImpl implements UserService {
     @CacheEvict(value = "user", key = "#id")
     public void delete(Long id) {
         log.info("delete {}", id);
+
         User user = this.userRepository.findById(id).orElseThrow(
                 () -> new NotFoundException(
                         this.messageSource.getMessage(
@@ -116,6 +119,7 @@ public class UserServiceImpl implements UserService {
     @Cacheable(value = "email", key = "#email")
     public UserDto getByEmail(String email) {
         log.info("getByEmail {}", email);
+
         return this.userMapper.toDto(this.userRepository.findByEmail(email).orElseThrow(
                 () -> new NotFoundException(
                         this.messageSource.getMessage(
@@ -137,6 +141,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void updateEmailConfirmedStatus(String email) {
+        log.info("updateEmailConfirmedStatus {}", email);
+
         User user = this.userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException(
                         this.messageSource.getMessage(
@@ -153,7 +159,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updatePassword(String email, String newPassword) {
+    public void updatePassword(String newPassword, String email) {
+        log.info("updatePassword {}", email);
+
         User user = this.userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException(
                         this.messageSource.getMessage(
@@ -162,6 +170,7 @@ public class UserServiceImpl implements UserService {
                                 Locale.getDefault()
                         )
                 ));
+
         user.setPassword(this.passwordEncoder.encode(newPassword));
 
         this.cacheClear.clearUserById(user.getId());

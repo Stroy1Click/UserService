@@ -38,7 +38,6 @@ public class UserDto implements Serializable {
     @NotBlank(message = "{validation.userdto.password.not_blank}")
     private String password;
 
-    @NotNull(message = "{validation.userdto.email_confirmed.not_null}")
     private Boolean emailConfirmed;
 
     @NotNull(message = "{validation.userdto.role.not_null}")

@@ -10,12 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import ru.stroy1click.common.exception.ValidationException;
 import ru.stroy1click.user.dto.UserDto;
-import ru.stroy1click.user.exception.ValidationException;
-import ru.stroy1click.user.dto.ConfirmEmailRequest;
-import ru.stroy1click.user.dto.UserServiceUpdatePasswordRequest;
 import ru.stroy1click.user.service.UserService;
-import ru.stroy1click.user.util.ValidationErrorUtils;
+import ru.stroy1click.common.util.ValidationErrorUtils;
 import ru.stroy1click.user.validator.UserCreateValidator;
 
 import java.net.URI;
@@ -40,7 +38,7 @@ public class UserController {
         return this.userService.get(id);
     }
 
-    @GetMapping("/email")
+    @GetMapping(params = "email")
     @Operation(summary = "Получение пользователя по электронной почте.")
     public UserDto getByEmail(@RequestParam("email") String email){
         return this.userService.getByEmail(email);
@@ -86,43 +84,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(
                 this.messageSource.getMessage(
                         "info.user.deleted",
-                        null,
-                        Locale.getDefault()
-                )
-        );
-    }
-
-    @PatchMapping("/email-status")
-    @Operation(summary = "Подтвердить email.")
-    public ResponseEntity<String> updateEmailConfirmedStatus(@RequestBody @Valid ConfirmEmailRequest confirmEmailRequest,
-                                                             BindingResult bindingResult){
-        if(bindingResult.hasFieldErrors()) throw new ValidationException(ValidationErrorUtils.collectErrorsToString(
-                bindingResult.getFieldErrors()
-        ));
-
-        this.userService.updateEmailConfirmedStatus(confirmEmailRequest.getEmail());
-        return ResponseEntity.ok(
-                this.messageSource.getMessage(
-                        "info.user.email_confirmed",
-                        null,
-                        Locale.getDefault()
-                )
-        );
-    }
-
-    @PatchMapping("/password")
-    @Operation(summary = "Обновить пароль.")
-    public ResponseEntity<String> updatePassword(@RequestBody @Valid UserServiceUpdatePasswordRequest updatePasswordRequest,
-                                                 BindingResult bindingResult){
-        if(bindingResult.hasFieldErrors()) throw new ValidationException(ValidationErrorUtils.collectErrorsToString(
-                bindingResult.getFieldErrors()
-        ));
-
-        this.userService.updatePassword(updatePasswordRequest.getEmail(),
-                updatePasswordRequest.getNewPassword());
-        return ResponseEntity.ok(
-                this.messageSource.getMessage(
-                        "info.user.password_updated",
                         null,
                         Locale.getDefault()
                 )
