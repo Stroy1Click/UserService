@@ -3,12 +3,15 @@ package ru.stroy1click.user.mapper;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
+import ru.stroy1click.common.mapper.Mappable;
 import ru.stroy1click.user.dto.UserDto;
 import ru.stroy1click.user.entity.User;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
-public class UserMapper implements Mappable<User, UserDto>{
+public class UserMapper implements Mappable<User, UserDto> {
 
     private final ModelMapper modelMapper;
 
@@ -20,5 +23,12 @@ public class UserMapper implements Mappable<User, UserDto>{
     @Override
     public UserDto toDto(User userCredential) {
         return this.modelMapper.map(userCredential, UserDto.class);
+    }
+
+    @Override
+    public List<UserDto> toDto(List<User> e) {
+        return e.stream()
+                .map(this::toDto)
+                .toList();
     }
 }

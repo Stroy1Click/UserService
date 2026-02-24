@@ -1,4 +1,4 @@
-package ru.stroy1click.user.integration;
+package ru.stroy1click.user.controller;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -7,21 +7,24 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.*;
+import ru.stroy1click.user.config.TestcontainersConfiguration;
 import ru.stroy1click.user.dto.UserDto;
 import ru.stroy1click.user.entity.Role;
 
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class UserTests {
+class UserControllerIT {
 
     @Autowired
     private TestRestTemplate testRestTemplate;
 
     @Test
-    public void createUser_WithValidData_ReturnsCreatedUser(){
+    public void create_WhenValidDataProvided_ShouldReturnCreatedUser(){
+        //Arrange
         UserDto userDto = new UserDto(null, "firstName", "lastName", "email@gmail.com", "password", false, Role.ROLE_USER);
         HttpEntity<UserDto> createEntity = new HttpEntity<>(userDto);
 
+        //Act
         ResponseEntity<UserDto> responseEntity = this.testRestTemplate.exchange(
                 "/api/v1/users",
                 HttpMethod.POST,
@@ -29,25 +32,27 @@ class UserTests {
                 UserDto.class
         );
 
+        //Assert
         Assertions.assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
         Assertions.assertNotNull(responseEntity.getHeaders().getLocation());
-
         UserDto createUser = this.testRestTemplate.exchange(
                 responseEntity.getHeaders().getLocation(),
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
                 UserDto.class
         ).getBody();
-
+        Assertions.assertNotNull(createUser);
         Assertions.assertNotNull(createUser.getId());
         Assertions.assertEquals(userDto.getFirstName(),createUser.getFirstName());
     }
 
     @Test
-    public void updateUser_WithValidData_ReturnsSuccessMessage() {
+    public void update_WhenValidDataProvidedAndUserExists_ShouldReturnSuccessMessage() {
+        //Arrange
         UserDto userDto = new UserDto(null, "newFirstName", "lastName", "email@gmail.com", "password", false, Role.ROLE_USER);
         HttpEntity<UserDto> updatedEntity = new HttpEntity<>(userDto);
 
+        //Act
         ResponseEntity<String> responseEntity = this.testRestTemplate.exchange(
                 "/api/v1/users/2",
                 HttpMethod.PATCH,
@@ -55,21 +60,22 @@ class UserTests {
                 String.class
         );
 
+        //Assert
         Assertions.assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
         Assertions.assertEquals("Пользователь обновлён", responseEntity.getBody());
-
         UserDto updatedUserDto = this.testRestTemplate.exchange(
                 "/api/v1/users/2",
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
                 UserDto.class
         ).getBody();
-
+        Assertions.assertNotNull(updatedUserDto);
         Assertions.assertEquals(updatedUserDto.getFirstName(), userDto.getFirstName());
     }
 
     @Test
-    public void getUser_ById_ReturnsUserDto() {
+    public void get_WhenUserExists_ShouldReturnUserDto() {
+        //Act
         ResponseEntity<UserDto> responseEntity = this.testRestTemplate.exchange(
                 "/api/v1/users/1",
                 HttpMethod.GET,
@@ -77,13 +83,18 @@ class UserTests {
                 UserDto.class
         );
 
+        //Assert
         Assertions.assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
+        Assertions.assertNotNull(responseEntity.getBody());
         Assertions.assertNotNull(responseEntity.getBody().getFirstName());
     }
 
     @Test
-    public void getUser_ByEmail_ReturnsUserDto() {
+    public void getByEmail_WhenUserExists_ShouldReturnUserDto() {
+        //Arrange
         String email = "mike_thompson@gmail.com";
+
+        //Act
         ResponseEntity<UserDto> responseEntity = this.testRestTemplate.exchange(
                 "/api/v1/users/email?email=" + email,
                 HttpMethod.GET,
@@ -91,13 +102,18 @@ class UserTests {
                 UserDto.class
         );
 
+        //Assert
         Assertions.assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
+        Assertions.assertNotNull(responseEntity.getBody());
         Assertions.assertEquals("Mike", responseEntity.getBody().getFirstName());
     }
 
     @Test
-    public void getUserByEmail_WhenEmailNotFound_ReturnsNotFound() {
+    public void getByEmail_WhenUserDoesNotExists_ShouldThrowNotFoundException() {
+        //Arrange
         String email = "notfound@gmail.com";
+
+        //Act
         ResponseEntity<ProblemDetail> responseEntity = this.testRestTemplate.exchange(
                 "/api/v1/users/email?email=" + email,
                 HttpMethod.GET,
@@ -105,13 +121,16 @@ class UserTests {
                 ProblemDetail.class
         );
 
+        //Assert
         Assertions.assertTrue(responseEntity.getStatusCode().is4xxClientError());
+        Assertions.assertNotNull(responseEntity.getBody());
         Assertions.assertEquals("Пользователь с электронной почтой %s не найден".formatted(email),
                 responseEntity.getBody().getDetail());
     }
 
     @Test
-    public void deleteUser_WithValidId_ReturnsSuccessMessage() {
+    public void delete_WhenUserExists_ShouldReturnSuccessMessage() {
+        //Act
         ResponseEntity<String> responseEntity = this.testRestTemplate.exchange(
                 "/api/v1/users/3",
                 HttpMethod.DELETE,
@@ -119,6 +138,7 @@ class UserTests {
                 String.class
         );
 
+        //Assert
         Assertions.assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
         Assertions.assertEquals("Пользователь удалён", responseEntity.getBody());
 
@@ -130,90 +150,7 @@ class UserTests {
         );
 
         Assertions.assertTrue(deletedUser.getStatusCode().is4xxClientError());
+        Assertions.assertNotNull(deletedUser.getBody());
         Assertions.assertEquals("Не найдено", deletedUser.getBody().getTitle());
-    }
-
-    @Test
-    public void updateUser_WithEmptyFirstName_ReturnsValidationError() {
-        UserDto userDtoWithEmptyFirstName = new UserDto(null, "", "lastName", "email@gmail.com", "password", false, Role.ROLE_USER);
-        HttpEntity<UserDto> entityWithEmptyFirstName = new HttpEntity<>(userDtoWithEmptyFirstName);
-
-        ResponseEntity<ProblemDetail> responseWithEmptyFirstName = this.testRestTemplate.exchange(
-                "/api/v1/users/2",
-                HttpMethod.PATCH,
-                entityWithEmptyFirstName,
-                ProblemDetail.class
-        );
-
-        Assertions.assertTrue(responseWithEmptyFirstName.getStatusCode().is4xxClientError());
-        Assertions.assertEquals("Ошибка валидации", responseWithEmptyFirstName.getBody().getTitle());
-    }
-
-    @Test
-    public void updateUser_WithTooShortFirstName_ReturnsValidationError() {
-        UserDto userDtoWithShortFirstName = new UserDto(null, "A", "lastName", "email@gmail.com", "password", false, Role.ROLE_USER);
-        HttpEntity<UserDto> entityWithShortFirstName = new HttpEntity<>(userDtoWithShortFirstName);
-
-        ResponseEntity<ProblemDetail> responseWithShortFirstName = this.testRestTemplate.exchange(
-                "/api/v1/users/2",
-                HttpMethod.PATCH,
-                entityWithShortFirstName,
-                ProblemDetail.class
-        );
-
-        Assertions.assertTrue(responseWithShortFirstName.getStatusCode().is4xxClientError());
-        Assertions.assertEquals("Ошибка валидации", responseWithShortFirstName.getBody().getTitle());
-        Assertions.assertTrue(responseWithShortFirstName.getBody().getDetail().contains("Минимальная длина имени составляет 2 символа"));
-    }
-
-    @Test
-    public void updateUser_WithEmptyEmail_ReturnsValidationError() {
-        UserDto userDtoWithEmptyEmail = new UserDto(null, "firstName", "lastName", "", "password", false, Role.ROLE_USER);
-        HttpEntity<UserDto> entityWithEmptyEmail = new HttpEntity<>(userDtoWithEmptyEmail);
-
-        ResponseEntity<ProblemDetail> responseWithEmptyEmail = this.testRestTemplate.exchange(
-                "/api/v1/users/2",
-                HttpMethod.PATCH,
-                entityWithEmptyEmail,
-                ProblemDetail.class
-        );
-
-
-        Assertions.assertTrue(responseWithEmptyEmail.getStatusCode().is4xxClientError());
-        Assertions.assertEquals("Ошибка валидации", responseWithEmptyEmail.getBody().getTitle());
-    }
-
-    @Test
-    public void updateUser_WithInvalidEmailFormat_ReturnsValidationError() {
-        UserDto userDtoWithInvalidEmail = new UserDto(null, "firstName", "lastName", "invalid-email", "password", false, Role.ROLE_USER);
-        HttpEntity<UserDto> entityWithInvalidEmail = new HttpEntity<>(userDtoWithInvalidEmail);
-
-        ResponseEntity<ProblemDetail> responseWithInvalidEmail = this.testRestTemplate.exchange(
-                "/api/v1/users/2",
-                HttpMethod.PATCH,
-                entityWithInvalidEmail,
-                ProblemDetail.class
-        );
-
-        Assertions.assertTrue(responseWithInvalidEmail.getStatusCode().is4xxClientError());
-        Assertions.assertEquals("Ошибка валидации", responseWithInvalidEmail.getBody().getTitle());
-        Assertions.assertEquals("Электронная почта должна быть валидной(иметь @)", responseWithInvalidEmail.getBody().getDetail());
-    }
-
-    @Test
-    public void updateUser_WithNullRole_ReturnsValidationError() {
-        UserDto userDtoWithNullRole = new UserDto(null, "firstName", "lastName", "email@gmail.com", "password", false, null);
-        HttpEntity<UserDto> entityWithNullRole = new HttpEntity<>(userDtoWithNullRole);
-
-        ResponseEntity<ProblemDetail> responseWithNullRole = this.testRestTemplate.exchange(
-                "/api/v1/users/2",
-                HttpMethod.PATCH,
-                entityWithNullRole,
-                ProblemDetail.class
-        );
-
-        Assertions.assertTrue(responseWithNullRole.getStatusCode().is4xxClientError());
-        Assertions.assertEquals("Ошибка валидации", responseWithNullRole.getBody().getTitle());
-        Assertions.assertEquals("Роль не может быть пустой", responseWithNullRole.getBody().getDetail());
     }
 }

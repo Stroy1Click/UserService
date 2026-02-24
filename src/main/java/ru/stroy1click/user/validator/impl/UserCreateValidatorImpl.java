@@ -3,7 +3,7 @@ package ru.stroy1click.user.validator.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
-import ru.stroy1click.user.exception.AlreadyExistsException;
+import ru.stroy1click.common.exception.AlreadyExistsException;
 import ru.stroy1click.user.service.UserService;
 import ru.stroy1click.user.validator.UserCreateValidator;
 
