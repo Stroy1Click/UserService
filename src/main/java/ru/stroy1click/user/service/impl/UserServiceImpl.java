@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
                     .firstName(userDto.getFirstName())
                     .lastName(userDto.getLastName())
                     .password(user.getPassword())
-                    .emailConfirmed(user.getEmailConfirmed())
+                    .isEmailConfirmed(user.getIsEmailConfirmed())
                     .email(user.getEmail())
                     .role(user.getRole())
                     .build();
@@ -151,7 +151,7 @@ public class UserServiceImpl implements UserService {
                                 Locale.getDefault()
                         )
                 ));
-        user.setEmailConfirmed(true);
+        user.setIsEmailConfirmed(true);
 
         this.cacheClear.clearUserById(user.getId());
         this.cacheClear.clearEmail(email);

@@ -56,7 +56,7 @@ public class UserServiceTest {
                 .lastName("Doe")
                 .email("test@mail.com")
                 .password("encoded")
-                .emailConfirmed(false)
+                .isEmailConfirmed(false)
                 .role(Role.ROLE_USER)
                 .build();
 
@@ -243,7 +243,7 @@ public class UserServiceTest {
         this.userService.updateEmailConfirmedStatus("test@mail.com");
 
         //Assert
-        Assertions.assertTrue(user.getEmailConfirmed());
+        Assertions.assertTrue(user.getIsEmailConfirmed());
         verify(this.cacheClear).clearUserById(user.getId());
         verify(this.cacheClear).clearEmail("test@mail.com");
     }

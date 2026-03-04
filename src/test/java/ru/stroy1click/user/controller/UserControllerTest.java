@@ -35,7 +35,7 @@ public class UserControllerTest {
         UserDto dto = UserDto.builder()
                 .lastName("LastName")
                 .email("email@gmail.com")
-                .emailConfirmed(false)
+                .isEmailConfirmed(false)
                 .role(Role.ROLE_USER)
                 .password("{nope}password")
                 .build();
@@ -62,7 +62,7 @@ public class UserControllerTest {
                 .firstName("FirstName")
                 .lastName("LastName")
                 .email("email@gmail.com")
-                .emailConfirmed(false)
+                .isEmailConfirmed(false)
                 .role(Role.ROLE_USER)
                 .build();
         RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/api/v1/users")
@@ -89,7 +89,7 @@ public class UserControllerTest {
                 .firstName("И")
                 .lastName("LastName")
                 .email("email@gmail.com")
-                .emailConfirmed(false)
+                .isEmailConfirmed(false)
                 .role(Role.ROLE_USER)
                 .password("{nope}password")
                 .build();
@@ -116,7 +116,7 @@ public class UserControllerTest {
         UserDto dto = UserDto.builder()
                 .firstName("FirstName")
                 .lastName("LastName")
-                .emailConfirmed(false)
+                .isEmailConfirmed(false)
                 .role(Role.ROLE_USER)
                 .password("{nope}password")
                 .build();
@@ -143,7 +143,7 @@ public class UserControllerTest {
                 .firstName("FirstName")
                 .lastName("LastName")
                 .email("invalidemailgmail.com")
-                .emailConfirmed(false)
+                .isEmailConfirmed(false)
                 .role(Role.ROLE_USER)
                 .password("{nope}password")
                 .build();
@@ -171,7 +171,7 @@ public class UserControllerTest {
                 .firstName("FirstName")
                 .lastName("LastName")
                 .email("email@gmail.com")
-                .emailConfirmed(false)
+                .isEmailConfirmed(false)
                 .password("{nope}password")
                 .build();
         RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/api/v1/users")
@@ -197,7 +197,7 @@ public class UserControllerTest {
         UserDto dto = UserDto.builder()
                 .lastName("LastName")
                 .email("email@gmail.com")
-                .emailConfirmed(false)
+                .isEmailConfirmed(false)
                 .role(Role.ROLE_USER)
                 .password("{nope}password")
                 .build();
@@ -223,7 +223,7 @@ public class UserControllerTest {
                 .firstName("И")
                 .lastName("LastName")
                 .email("email@gmail.com")
-                .emailConfirmed(false)
+                .isEmailConfirmed(false)
                 .role(Role.ROLE_USER)
                 .password("{nope}password")
                 .build();
@@ -250,7 +250,7 @@ public class UserControllerTest {
         UserDto dto = UserDto.builder()
                 .firstName("FirstName")
                 .lastName("LastName")
-                .emailConfirmed(false)
+                .isEmailConfirmed(false)
                 .role(Role.ROLE_USER)
                 .password("{nope}password")
                 .build();
@@ -277,7 +277,7 @@ public class UserControllerTest {
                 .firstName("FirstName")
                 .lastName("LastName")
                 .email("invalidemailgmail.com")
-                .emailConfirmed(false)
+                .isEmailConfirmed(false)
                 .role(Role.ROLE_USER)
                 .password("{nope}password")
                 .build();
@@ -305,7 +305,7 @@ public class UserControllerTest {
                 .firstName("FirstName")
                 .lastName("LastName")
                 .email("email@gmail.com")
-                .emailConfirmed(false)
+                .isEmailConfirmed(false)
                 .password("{nope}password")
                 .build();
         RequestBuilder requestBuilder = MockMvcRequestBuilders.patch("/api/v1/users/1")

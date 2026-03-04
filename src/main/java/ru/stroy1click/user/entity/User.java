@@ -26,7 +26,8 @@ public class User {
 
     private String password;
 
-    private Boolean emailConfirmed;
+    @Column(name = "email_confirmed")
+    private Boolean isEmailConfirmed;
 
     @Enumerated(value = EnumType.STRING)
     private Role role;
