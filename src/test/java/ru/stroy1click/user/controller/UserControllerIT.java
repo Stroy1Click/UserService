@@ -96,7 +96,7 @@ class UserControllerIT {
 
         //Act
         ResponseEntity<UserDto> responseEntity = this.testRestTemplate.exchange(
-                "/api/v1/users/email?email=" + email,
+                "/api/v1/users?email=" + email,
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
                 UserDto.class
@@ -115,7 +115,7 @@ class UserControllerIT {
 
         //Act
         ResponseEntity<ProblemDetail> responseEntity = this.testRestTemplate.exchange(
-                "/api/v1/users/email?email=" + email,
+                "/api/v1/users?email=" + email,
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
                 ProblemDetail.class
