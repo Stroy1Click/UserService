@@ -40,8 +40,8 @@ public class UserServiceImpl implements UserService {
     public UserDto get(Long id) {
         log.info("get {}", id);
 
-        User user = this.userRepository.findById(id).orElseThrow(
-                () -> ExceptionUtils.notFound("error.user.not_found_id",id));
+        User user = this.userRepository.findById(id)
+                .orElseThrow(() -> ExceptionUtils.notFound("error.user.not_found_id",id));
 
         return this.userMapper.toDto(user);
     }
@@ -88,8 +88,8 @@ public class UserServiceImpl implements UserService {
     public void delete(Long id) {
         log.info("delete {}", id);
 
-        User user = this.userRepository.findById(id).orElseThrow(
-                () -> ExceptionUtils.notFound("error.user.not_found_id",id));
+        User user = this.userRepository.findById(id)
+                .orElseThrow(() -> ExceptionUtils.notFound("error.user.not_found_id",id));
 
         this.userRepository.deleteById(id);
         this.cacheClear.clearEmail(user.getEmail());
@@ -100,8 +100,8 @@ public class UserServiceImpl implements UserService {
     public UserDto getByEmail(String email) {
         log.info("getByEmail {}", email);
 
-        User user = this.userRepository.findByEmail(email).orElseThrow(
-                () -> ExceptionUtils.notFound("error.user.not_found_email",email));
+        User user = this.userRepository.findByEmail(email)
+                .orElseThrow(() -> ExceptionUtils.notFound("error.user.not_found_email",email));
 
         return this.userMapper.toDto(user);
     }
@@ -118,8 +118,8 @@ public class UserServiceImpl implements UserService {
     public void updateEmailConfirmedStatus(String email) {
         log.info("updateEmailConfirmedStatus {}", email);
 
-        User user = this.userRepository.findByEmail(email).orElseThrow(
-                () -> ExceptionUtils.notFound("error.user.not_found_email",email));
+        User user = this.userRepository.findByEmail(email)
+                .orElseThrow(() -> ExceptionUtils.notFound("error.user.not_found_email",email));
 
         user.setIsEmailConfirmed(true);
 
@@ -132,8 +132,8 @@ public class UserServiceImpl implements UserService {
     public void updatePassword(String newPassword, String email) {
         log.info("updatePassword {}", email);
 
-        User user = this.userRepository.findByEmail(email).orElseThrow(
-                () -> ExceptionUtils.notFound("error.user.not_found_email",email));
+        User user = this.userRepository.findByEmail(email)
+                .orElseThrow(() -> ExceptionUtils.notFound("error.user.not_found_email",email));
 
         user.setPassword(newPassword); //новый пароль предоставляется в уже хэшированном виде
 
