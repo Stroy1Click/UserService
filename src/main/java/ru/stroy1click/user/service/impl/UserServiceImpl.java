@@ -1,6 +1,5 @@
 package ru.stroy1click.user.service.impl;
 
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -10,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.stroy1click.common.exception.NotFoundException;
+import ru.stroy1click.common.util.ExceptionUtils;
 import ru.stroy1click.user.cache.CacheClear;
 import ru.stroy1click.user.dto.UserDto;
 import ru.stroy1click.user.mapper.UserMapper;
@@ -40,15 +40,10 @@ public class UserServiceImpl implements UserService {
     public UserDto get(Long id) {
         log.info("get {}", id);
 
-        return this.userMapper.toDto(this.userRepository.findById(id).orElseThrow(
-                () -> new NotFoundException(
-                        this.messageSource.getMessage(
-                                "error.user.not_found_id",
-                                new Object[]{id},
-                                Locale.getDefault()
-                        )
-                ))
-        );
+        User user = this.userRepository.findById(id).orElseThrow(
+                () -> ExceptionUtils.notFound("error.user.not_found_id",id));
+
+        return this.userMapper.toDto(user);
     }
 
     @Override
@@ -72,16 +67,8 @@ public class UserServiceImpl implements UserService {
         log.info("update {}, {}", id, userDto);
 
         this.userRepository.findById(id).ifPresentOrElse(user -> {
-            User newUser = User.builder()
-                    .id(user.getId())
-                    .firstName(userDto.getFirstName())
-                    .lastName(userDto.getLastName())
-                    .password(user.getPassword())
-                    .isEmailConfirmed(user.getIsEmailConfirmed())
-                    .email(user.getEmail())
-                    .role(user.getRole())
-                    .build();
-            this.userRepository.save(newUser);
+            user.setFirstName(userDto.getFirstName());
+            user.setLastName(userDto.getLastName());
         }, () -> {
             throw new NotFoundException(
                     this.messageSource.getMessage(
@@ -102,14 +89,7 @@ public class UserServiceImpl implements UserService {
         log.info("delete {}", id);
 
         User user = this.userRepository.findById(id).orElseThrow(
-                () -> new NotFoundException(
-                        this.messageSource.getMessage(
-                                "error.user.not_found_id",
-                                new Object[]{id},
-                                Locale.getDefault()
-                        )
-                )
-        );
+                () -> ExceptionUtils.notFound("error.user.not_found_id",id));
 
         this.userRepository.deleteById(id);
         this.cacheClear.clearEmail(user.getEmail());
@@ -120,15 +100,10 @@ public class UserServiceImpl implements UserService {
     public UserDto getByEmail(String email) {
         log.info("getByEmail {}", email);
 
-        return this.userMapper.toDto(this.userRepository.findByEmail(email).orElseThrow(
-                () -> new NotFoundException(
-                        this.messageSource.getMessage(
-                                "error.user.not_found_email",
-                                new Object[]{email},
-                                Locale.getDefault()
-                        )
-                )
-        ));
+        User user = this.userRepository.findByEmail(email).orElseThrow(
+                () -> ExceptionUtils.notFound("error.user.not_found_email",email));
+
+        return this.userMapper.toDto(user);
     }
 
     @Override
@@ -143,14 +118,9 @@ public class UserServiceImpl implements UserService {
     public void updateEmailConfirmedStatus(String email) {
         log.info("updateEmailConfirmedStatus {}", email);
 
-        User user = this.userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException(
-                        this.messageSource.getMessage(
-                                "error.user.not_found_email",
-                                new Object[]{email},
-                                Locale.getDefault()
-                        )
-                ));
+        User user = this.userRepository.findByEmail(email).orElseThrow(
+                () -> ExceptionUtils.notFound("error.user.not_found_email",email));
+
         user.setIsEmailConfirmed(true);
 
         this.cacheClear.clearUserById(user.getId());
@@ -162,16 +132,10 @@ public class UserServiceImpl implements UserService {
     public void updatePassword(String newPassword, String email) {
         log.info("updatePassword {}", email);
 
-        User user = this.userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException(
-                        this.messageSource.getMessage(
-                                "error.user.not_found_email",
-                                new Object[]{email},
-                                Locale.getDefault()
-                        )
-                ));
+        User user = this.userRepository.findByEmail(email).orElseThrow(
+                () -> ExceptionUtils.notFound("error.user.not_found_email",email));
 
-        user.setPassword(this.passwordEncoder.encode(newPassword));
+        user.setPassword(newPassword); //новый пароль предоставляется в уже хэшированном виде
 
         this.cacheClear.clearUserById(user.getId());
         this.cacheClear.clearEmail(email);

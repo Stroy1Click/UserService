@@ -90,11 +90,6 @@ public class UserServiceTest {
         //Arrange
         when(this.userRepository.findById(1L))
                 .thenReturn(Optional.empty());
-        when(this.messageSource.getMessage(
-                eq("error.user.not_found_id"),
-                any(),
-                any(Locale.class)
-        )).thenReturn("User not found");
 
         //Act & Assert
         Assertions.assertThrows(
@@ -126,12 +121,23 @@ public class UserServiceTest {
         when(this.userRepository.findById(1L))
                 .thenReturn(Optional.of(user));
 
+        UserDto dto = UserDto.builder()
+                .id(1L)
+                .firstName("New John")
+                .lastName("New Doe")
+                .email("test@mail.com")
+                .password("encoded")
+                .isEmailConfirmed(false)
+                .role(Role.ROLE_USER)
+                .build();
+
         //Act
-        this.userService.update(1L, userDto);
+        this.userService.update(1L, dto);
 
         //Assert
-        verify(this.userRepository).save(any(User.class));
         verify(this.cacheClear).clearEmail(userDto.getEmail());
+        assertEquals("New John", user.getFirstName());
+        assertEquals("New Doe", user.getLastName());
     }
 
     @Test
@@ -171,11 +177,6 @@ public class UserServiceTest {
         //Arrange
         when(this.userRepository.findById(1L))
                 .thenReturn(Optional.empty());
-        when(this.messageSource.getMessage(
-                eq("error.user.not_found_id"),
-                any(),
-                any(Locale.class)
-        )).thenReturn("User not found");
 
         //Act & Assert
         Assertions.assertThrows(
@@ -206,11 +207,6 @@ public class UserServiceTest {
         //Arrange
         when(this.userRepository.findByEmail("test@mail.com"))
                 .thenReturn(Optional.empty());
-        when(this.messageSource.getMessage(
-                eq("error.user.not_found_email"),
-                any(),
-                any(Locale.class)
-        )).thenReturn("User not found");
 
         //Act & Assert
         Assertions.assertThrows(
@@ -253,11 +249,6 @@ public class UserServiceTest {
         //Arrange
         when(this.userRepository.findByEmail("test@mail.com"))
                 .thenReturn(Optional.empty());
-        when(this.messageSource.getMessage(
-                eq("error.user.not_found_email"),
-                any(),
-                any(Locale.class)
-        )).thenReturn("User not found");
 
         //Act & Assert
         Assertions.assertThrows(
@@ -271,11 +262,9 @@ public class UserServiceTest {
         //Arrange
         when(this.userRepository.findByEmail("test@mail.com"))
                 .thenReturn(Optional.of(user));
-        when(this.passwordEncoder.encode("newPass"))
-                .thenReturn("encodedNewPass");
 
         //Act
-        this.userService.updatePassword( "newPass", "test@mail.com");
+        this.userService.updatePassword( "encodedNewPass", "test@mail.com");
 
         //Assert
         assertEquals("encodedNewPass", user.getPassword());
@@ -287,11 +276,6 @@ public class UserServiceTest {
     void updatePassword_WhenUserDoesNotExists_ShouldThrowNotFoundException() {
         //Arrange
         when(this.userRepository.findByEmail("test@mail.com")).thenReturn(Optional.empty());
-        when(this.messageSource.getMessage(
-                eq("error.user.not_found_email"),
-                any(),
-                any(Locale.class)
-        )).thenReturn("User not found");
 
         //Act & Assert
         assertThrows(NotFoundException.class,

@@ -21,7 +21,11 @@ public class AdviceController {
     @ExceptionHandler(NotFoundException.class)
     public ProblemDetail handleException(NotFoundException exception){
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-                HttpStatus.NOT_FOUND, exception.getMessage()
+                HttpStatus.NOT_FOUND, this.messageSource.getMessage(
+                        exception.getMessageKey(),
+                        exception.getArgs(),
+                        Locale.getDefault()
+                )
         );
         problemDetail.setTitle(
                 this.messageSource.getMessage(
@@ -30,7 +34,6 @@ public class AdviceController {
                         Locale.getDefault()
                 )
         );
-        problemDetail.setDetail(exception.getMessage());
         return problemDetail;
     }
 
@@ -46,13 +49,18 @@ public class AdviceController {
                         Locale.getDefault()
                 )
         );
-        problemDetail.setDetail(exception.getMessage());
         return problemDetail;
     }
 
     @ExceptionHandler(AlreadyExistsException.class)
-    public ProblemDetail problemDetail(AlreadyExistsException exception){
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
+    public ProblemDetail handleException(AlreadyExistsException exception){
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT, this.messageSource.getMessage(
+                        exception.getMessageKey(),
+                        exception.getArgs(),
+                        Locale.getDefault()
+                )
+        );
         problemDetail.setTitle(
                 this.messageSource.getMessage(
                         "error.title.already_exist",
@@ -60,7 +68,6 @@ public class AdviceController {
                         Locale.getDefault()
                 )
         );
-        problemDetail.setDetail(exception.getMessage());
         return problemDetail;
     }
 
