@@ -39,9 +39,20 @@ public class AdviceController {
 
     @ExceptionHandler(ValidationException.class)
     public ProblemDetail handleException(ValidationException exception){
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST, exception.getMessage()
-        );
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+
+        if(exception.isRawMessage()) {
+            problemDetail.setDetail(exception.getMessage());
+        } else {
+            problemDetail.setDetail(
+                    this.messageSource.getMessage(
+                            exception.getMessageKey(),
+                            exception.getArgs(),
+                            Locale.getDefault()
+                    )
+            );
+        }
+
         problemDetail.setTitle(
                 this.messageSource.getMessage(
                         "error.title.validation",
